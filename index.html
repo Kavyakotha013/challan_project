@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vehicle Registration</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>🚗 Vehicle Registration</h2>
+    <form action="register.php" method="POST">
+      <input type="text" name="owner_name" placeholder="Owner Name" required>
+      <input type="text" name="vehicle_number" placeholder="Vehicle Number" required>
+      <input type="text" name="vehicle_type" placeholder="Vehicle Type" required>
+      <input type="text" name="sensor_code" placeholder="Sensor Code" required>
+      <input type="text" name="contact_details" placeholder="Email / Phone" required>
+      <button type="submit">Register Vehicle</button>
+    </form>
+    <div class="footer">Powered by Pollution Monitoring System</div>
+  </div>
+</body>
+</html>

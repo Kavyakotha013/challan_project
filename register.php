@@ -1,47 +1,37 @@
 <?php
-$servername = "mysql.railway.internal";
-$username   = "root";
-$password   = "kRtQVumqwUQPtraipUrslkOStzvSuIzv";
-$dbname     = "railway_pollution_db";
-$port       = 3306;
+session_start();
+if (!isset($_SESSION['gov_user'])) {
+    header("Location: error.php?type=unauthorized");
+    exit();
+}
+$conn = new mysqli($_ENV["MYSQLHOST"], $_ENV["MYSQLUSER"], $_ENV["MYSQLPASSWORD"], $_ENV["MYSQLDATABASE"], $_ENV["MYSQLPORT"]);
 
-$conn = new mysqli($servername, $username, $password, $dbname,$port);
-if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
-
-$owner_name      = $_POST['owner_name'];
-$vehicle_number  = $_POST['vehicle_number'];
-$vehicle_type    = $_POST['vehicle_type'];
-$sensor_code     = $_POST['sensor_code'];
-$contact_details = $_POST['contact_details'];
-
-$sql_check = "SELECT * FROM vehicles WHERE vehicle_number='$vehicle_number' OR sensor_code='$sensor_code'";
-$result = $conn->query($sql_check);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $stmt = $conn->prepare("INSERT INTO vehicles (owner_name, vehicle_number, vehicle_type, sensor_code, contact_details, owner_email) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssss", $_POST['owner_name'], $_POST['vehicle_number'], $_POST['vehicle_type'], $_POST['sensor_code'], $_POST['contact_details'], $_POST['owner_email']);
+    if ($stmt->execute()) {
+        $message = "<div class='message success'>✅ Vehicle registered successfully!</div>";
+    } else {
+        $message = "<div class='message error'>❌ Error: " . $conn->error . "</div>";
+    }
+}
 ?>
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Registration Result</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+<html>
+<head><title>Register Vehicle</title><link rel="stylesheet" href="style.css"></head>
 <body>
-  <div class="container">
-    <h2>🚗 Vehicle Registration</h2>
-    <?php
-    if ($result->num_rows > 0) {
-        echo "<div class='message error'>❌ Error: Vehicle number or sensor code already registered!</div>";
-    } else {
-        $sql = "INSERT INTO vehicles (owner_name, vehicle_number, vehicle_type, sensor_code, contact_details, registration_date, violation_count) 
-                VALUES ('$owner_name', '$vehicle_number', '$vehicle_type', '$sensor_code', '$contact_details', NOW(), 0)";
-        if ($conn->query($sql) === TRUE) {
-            echo "<div class='message success'>✅ Registration successful! Vehicle <b>$vehicle_number</b> has been added.</div>";
-        } else {
-            echo "<div class='message error'>❌ Error: " . $conn->error . "</div>";
-        }
-    }
-    $conn->close();
-    ?>
-    <div class="footer">Powered by Pollution Monitoring System</div>
-  </div>
+<div class="container">
+  <h2>📋 Register Vehicle</h2>
+  <?php if (isset($message)) echo $message; ?>
+  <form method="POST">
+    <label>Owner Name:</label><input type="text" name="owner_name" required>
+    <label>Vehicle Number:</label><input type="text" name="vehicle_number" required>
+    <label>Vehicle Type:</label><input type="text" name="vehicle_type" required>
+    <label>Sensor Code:</label><input type="text" name="sensor_code" required>
+    <label>Contact Details:</label><input type="text" name="contact_details" required>
+    <label>Email:</label><input type="email" name="owner_email" required>
+    <button type="submit">Register</button>
+  </form>
+</div>
 </body>
 </html>

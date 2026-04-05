@@ -2,21 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Vehicle Registration</title>
+  <title>Pollution Monitoring Portal</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h2>🚗 Vehicle Registration</h2>
-    <form action="register.php" method="POST">
-      <input type="text" name="owner_name" placeholder="Owner Name" required>
-      <input type="text" name="vehicle_number" placeholder="Vehicle Number" required>
-      <input type="text" name="vehicle_type" placeholder="Vehicle Type" required>
-      <input type="text" name="sensor_code" placeholder="Sensor Code" required>
-      <input type="text" name="contact_details" placeholder="Email / Phone" required>
-      <button type="submit">Register Vehicle</button>
+<div class="container">
+  <h1>🚗 Pollution Monitoring & Payment Portal</h1>
+
+  <div class="card">
+    <h2>💳 Check Challan Status</h2>
+    <form action="challan.php" method="POST">
+      <input type="text" name="vehicle_number" placeholder="Enter Vehicle Number" required>
+      <input type="text" name="phone_number" placeholder="Enter Phone Number (optional)">
+      <button type="submit">Check Status</button>
     </form>
-    <div class="footer">Powered by Pollution Monitoring System</div>
   </div>
+
+  <div class="card">
+    <h2>🔒 Government Official Login</h2>
+    <a href="gov_login.php"><button>Login</button></a>
+  </div>
+
+  <div class="footer">© 2026 Pollution Monitoring Portal</div>
+</div>
 </body>
 </html>

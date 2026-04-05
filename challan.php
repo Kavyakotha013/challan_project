@@ -17,7 +17,7 @@ if ($conn->connect_error) {
 $vehicle_number = $_POST['vehicle_number'] ?? null;
 $message = null;
 $row = null;
-$violations_last_90 = 0;
+$violations_last_minute = 0;
 $total_challans = 0;
 $unpaid_challans = 0;
 $latest_challan = null;
@@ -32,17 +32,17 @@ if ($vehicle_number) {
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
 
-        // Violations in last 90 days
+        // Violations in last 1 minute
         $stmtV = $conn->prepare("
-            SELECT COUNT(*) AS violations_last_90_days
+            SELECT COUNT(*) AS violations_last_minute
             FROM violations
             WHERE vehicle_id = ?
-              AND violation_date >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+              AND violation_date >= DATE_SUB(NOW(), INTERVAL 1 MINUTE)
         ");
         $stmtV->bind_param("i", $row['id']);
         $stmtV->execute();
         $resultV = $stmtV->get_result();
-        $violations_last_90 = $resultV->fetch_assoc()['violations_last_90_days'];
+        $violations_last_minute = $resultV->fetch_assoc()['violations_last_minute'];
 
         // Total challans
         $stmtC = $conn->prepare("SELECT COUNT(*) AS total_challans FROM challans WHERE vehicle_id=?");
@@ -89,7 +89,7 @@ $conn->close();
     <div class="message success">
       Owner: <b><?php echo htmlspecialchars($row['owner_name']); ?></b><br>
       Vehicle: <b><?php echo htmlspecialchars($row['vehicle_number']); ?></b><br>
-      Violations in last 90 days: <b><?php echo $violations_last_90; ?></b><br>
+      Violations in last 1 minute: <b><?php echo $violations_last_minute; ?></b><br>
       Total Challans: <b><?php echo $total_challans; ?></b><br>
       Unpaid Challans: <b><?php echo $unpaid_challans; ?></b>
     </div>

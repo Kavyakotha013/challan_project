@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS violations (
   FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
 );
 
--- Insert a default government user for testing (username: admin, password: admin123)
-INSERT IGNORE INTO gov_users (username, password_hash)
+DELETE FROM gov_users WHERE username='admin';
+
+INSERT INTO gov_users (username, password_hash)
 VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');

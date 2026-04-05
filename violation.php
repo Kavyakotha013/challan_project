@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli($_ENV["MYSQLHOST"], $_ENV["MYSQLUSER"], $_ENV["MYSQLPASSWORD"], $_ENV["MYSQLDATABASE"], $_ENV["MYSQLPORT"]);
+$conn = new mysqli(getenv("MYSQLHOST"), getenv("MYSQLUSER"), getenv("MYSQLPASSWORD"), getenv("MYSQLDATABASE"), getenv("MYSQLPORT"));
 
 $sensor_code     = $_POST['sensor_code'];
 $pollution_value = $_POST['pollution_value'];

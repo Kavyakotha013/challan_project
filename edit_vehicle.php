@@ -9,11 +9,11 @@ if (!isset($_SESSION['gov_user'])) {
 
 // Connect to Railway MySQL
 $conn = new mysqli(
-    $_ENV["MYSQLHOST"],
-    $_ENV["MYSQLUSER"],
-    $_ENV["MYSQLPASSWORD"],
-    $_ENV["MYSQLDATABASE"],
-    $_ENV["MYSQLPORT"]
+    getenv("MYSQLHOST"),
+    getenv("MYSQLUSER"),
+    getenv("MYSQLPASSWORD"),
+    getenv("MYSQLDATABASE"),
+    getenv("MYSQLPORT")
 );
 
 if ($conn->connect_error) {

@@ -1,10 +1,10 @@
 <?php
 $conn = new mysqli(
-    $_ENV["MYSQLHOST"],
-    $_ENV["MYSQLUSER"],
-    $_ENV["MYSQLPASSWORD"],
-    $_ENV["MYSQLDATABASE"],
-    $_ENV["MYSQLPORT"]
+    getenv("MYSQLHOST"),
+    getenv("MYSQLUSER"),
+    getenv("MYSQLPASSWORD"),
+    getenv("MYSQLDATABASE"),
+    getenv("MYSQLPORT")
 );
 
 $vehicle_number = $_POST['vehicle_number'] ?? null;

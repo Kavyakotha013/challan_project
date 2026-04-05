@@ -4,7 +4,7 @@ if (!isset($_SESSION['gov_user'])) {
     header("Location: error.php?type=unauthorized");
     exit();
 }
-$conn = new mysqli($_ENV["MYSQLHOST"], $_ENV["MYSQLUSER"], $_ENV["MYSQLPASSWORD"], $_ENV["MYSQLDATABASE"], $_ENV["MYSQLPORT"]);
+$conn = new mysqli(getenv("MYSQLHOST"), getenv("MYSQLUSER"), getenv("MYSQLPASSWORD"), getenv("MYSQLDATABASE"), getenv("MYSQLPORT"));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $conn->prepare("INSERT INTO vehicles (owner_name, vehicle_number, vehicle_type, sensor_code, contact_details, owner_email) VALUES (?, ?, ?, ?, ?, ?)");

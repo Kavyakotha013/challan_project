@@ -44,6 +44,16 @@ if ($vehicle_number) {
         $resultV = $stmtV->get_result();
         $violations_last_minute = $resultV->fetch_assoc()['violations_last_minute'];
 
+        // 🚨 Auto-create challan if violations > 5 in last minute
+        if ($violations_last_minute > 5) {
+            $stmtCh = $conn->prepare("
+                INSERT INTO challans (vehicle_id, challan_date, amount, status)
+                VALUES (?, NOW(), 500, 'unpaid')
+            ");
+            $stmtCh->bind_param("i", $row['id']);
+            $stmtCh->execute();
+        }
+
         // Total challans
         $stmtC = $conn->prepare("SELECT COUNT(*) AS total_challans FROM challans WHERE vehicle_id=?");
         $stmtC->bind_param("i", $row['id']);
@@ -73,38 +83,3 @@ if ($vehicle_number) {
 }
 $conn->close();
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Challan Status</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="container">
-  <h2>💳 Challan Status</h2>
-
-  <?php if ($message) echo $message; ?>
-
-  <?php if ($row): ?>
-    <div class="message success">
-      Owner: <b><?php echo htmlspecialchars($row['owner_name']); ?></b><br>
-      Vehicle: <b><?php echo htmlspecialchars($row['vehicle_number']); ?></b><br>
-      Violations in last 1 minute: <b><?php echo $violations_last_minute; ?></b><br>
-      Total Challans: <b><?php echo $total_challans; ?></b><br>
-      Unpaid Challans: <b><?php echo $unpaid_challans; ?></b>
-    </div>
-
-    <?php if ($unpaid_challans >= 3): ?>
-      <div class="message danger">🚨 This vehicle has skipped 3 or more challans! Strict action required.</div>
-    <?php elseif ($unpaid_challans > 0 && $latest_challan): ?>
-      <div class="message warning">⚠️ Payment Pending! Please pay.</div>
-      <p>Amount Due: <b>₹<?php echo $latest_challan['amount']; ?></b></p>
-      <p>Last Challan Date: <b><?php echo $latest_challan['challan_date']; ?></b></p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=gov@upi&pn=PollutionDept&am=<?php echo $latest_challan['amount']; ?>&cu=INR" alt="Pay QR">
-    <?php else: ?>
-      <div class="message success">✅ No pending challans.</div>
-    <?php endif; ?>
-  <?php endif; ?>
-</div>
-</body>
-</html>

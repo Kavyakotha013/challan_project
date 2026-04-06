@@ -1,42 +1,12 @@
-CREATE TABLE vehicles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  owner_name VARCHAR(100),
-  vehicle_number VARCHAR(50) UNIQUE,
-  vehicle_type VARCHAR(50),
-  sensor_code VARCHAR(50) UNIQUE,
-  contact_details VARCHAR(100),
-  owner_email VARCHAR(100),
-  violation_count INT DEFAULT 0,
-  registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Violations table fix
+ALTER TABLE violations 
+DROP INDEX uq_vehicle,
+ADD UNIQUE KEY uq_vehicle_sensor (vehicle_id, sensor_code),
+MODIFY violation_count INT DEFAULT 1,
+MODIFY violation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 
-CREATE TABLE violations (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  vehicle_id INT,
-  sensor_code VARCHAR(50),
-  pollution_value FLOAT,
-  violation_count INT DEFAULT 0,
-  violation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
-  UNIQUE KEY uq_vehicle (vehicle_id)
-);
-
-CREATE TABLE challans (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  vehicle_id INT NOT NULL,
-  challan_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  amount DECIMAL(10,2) NOT NULL,
-  status ENUM('unpaid','paid') DEFAULT 'unpaid',
-  violation_count INT DEFAULT 0,
-  FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
-);
-
-CREATE TABLE gov_users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(50) UNIQUE,
-  password_hash VARCHAR(255)
-);
-
--- Insert constant government user (password = 'secure123')
-INSERT INTO gov_users (username, password_hash)
-VALUES ('gov_officer', '$2y$10$HASHGENERATEDWITHPASSWORD_HASH');
+-- Challans table fix
+ALTER TABLE challans 
+ADD COLUMN count INT DEFAULT 1,
+ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ADD UNIQUE KEY uq_vehicle_violation_status (vehicle_id, violation_count, status);

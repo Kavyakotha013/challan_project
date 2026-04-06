@@ -1,37 +1,30 @@
 <?php
-$conn = new mysqli(
-    $_ENV["MYSQLHOST"],
-    $_ENV["MYSQLUSER"],
-    $_ENV["MYSQLPASSWORD"],
-    $_ENV["MYSQLDATABASE"],
-    $_ENV["MYSQLPORT"]
-);
+include 'db_connect.php';
 
-if ($conn->connect_error) {
-    die(json_encode(["status"=>"error","message"=>"Database connection failed"]));
-}
-
-// Step 1: Safely read POST data
 $sensor_code     = $_POST['sensor_code'] ?? null;
 $pollution_value = $_POST['pollution_value'] ?? null;
 
-// Step 2: Check vehicle exists
+if (!$sensor_code || !$pollution_value) {
+    echo json_encode(["status"=>"error","message"=>"Missing sensor_code or pollution_value"]);
+    exit;
+}
+
+// Step 1: Find vehicle by sensor_code
 $stmt = $conn->prepare("SELECT id, vehicle_number FROM vehicles WHERE sensor_code=?");
 $stmt->bind_param("s", $sensor_code);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo json_encode(["status"=>"error","message"=>"Sensor code not found in vehicles table"]);
+    echo json_encode(["status"=>"error","message"=>"Sensor code not found"]);
     $conn->close();
     exit;
 }
 
-// Step 3: Vehicle found → upsert violation row, incrementing violation_count
-$row = $result->fetch_assoc();
+$row        = $result->fetch_assoc();
 $vehicle_id = $row['id'];
 
-// Keep one row per vehicle; increment violation_count on each new reading
+// Step 2: Upsert violation record
 $stmt2 = $conn->prepare("
     INSERT INTO violations (vehicle_id, sensor_code, pollution_value, violation_count, violation_date)
     VALUES (?, ?, ?, 1, NOW())
@@ -40,30 +33,24 @@ $stmt2 = $conn->prepare("
         pollution_value = VALUES(pollution_value),
         violation_date  = NOW()
 ");
-$stmt2->bind_param("iss", $vehicle_id, $sensor_code, $pollution_value);
+$stmt2->bind_param("isd", $vehicle_id, $sensor_code, $pollution_value);
 $stmt2->execute();
 
-// Step 4: Read current accumulated violation_count for this vehicle
-$stmt3 = $conn->prepare("
-    SELECT violation_count
-    FROM violations
-    WHERE vehicle_id = ?
-");
+// Step 3: Return updated violation count
+$stmt3 = $conn->prepare("SELECT violation_count FROM violations WHERE vehicle_id=?");
 $stmt3->bind_param("i", $vehicle_id);
 $stmt3->execute();
 $countResult = $stmt3->get_result();
 $countRow    = $countResult->fetch_assoc();
-$violation_count = $countRow['violation_count'] ?? 0;
 
 $response = [
     "status"          => "success",
     "message"         => "Violation recorded",
     "vehicle_id"      => $vehicle_id,
     "vehicle_number"  => $row['vehicle_number'],
-    "violation_count" => $violation_count
+    "violation_count" => $countRow['violation_count'] ?? 0
 ];
 
 echo json_encode($response);
-
 $conn->close();
 ?>

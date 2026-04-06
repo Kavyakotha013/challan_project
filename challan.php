@@ -29,14 +29,14 @@ $result = mysqli_query($conn, $query);
         </tr>
         <?php while($row = mysqli_fetch_assoc($result)) { ?>
         <tr>
-            <td><?= $row['id'] ?></td>
-            <td><?= $row['vehicle_number'] ?></td>
-            <td><?= $row['violation_count'] ?></td>
-            <td><?= $row['count'] ?></td>
-            <td><?= ucfirst($row['status']) ?></td>
-            <td><?= $row['amount'] ?></td>
-            <td><?= $row['challan_date'] ?></td>
-            <td><?= $row['updated_at'] ?></td>
+            <td><?= htmlspecialchars($row['id']) ?></td>
+            <td><?= htmlspecialchars($row['vehicle_number']) ?></td>
+            <td><?= htmlspecialchars($row['violation_count']) ?></td>
+            <td><?= htmlspecialchars($row['count']) ?></td>
+            <td><?= htmlspecialchars(ucfirst($row['status'])) ?></td>
+            <td><?= htmlspecialchars($row['amount']) ?></td>
+            <td><?= htmlspecialchars($row['challan_date']) ?></td>
+            <td><?= htmlspecialchars($row['updated_at']) ?></td>
         </tr>
         <?php } ?>
     </table>

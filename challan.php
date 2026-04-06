@@ -17,7 +17,7 @@ if ($conn->connect_error) {
 $vehicle_number = $_POST['vehicle_number'] ?? null;
 $message = null;
 $row = null;
-$violations_last_minute = 0;
+$violation_count = 0;
 $total_challans = 0;
 $unpaid_challans = 0;
 $latest_challan = null;
@@ -32,27 +32,18 @@ if ($vehicle_number) {
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
 
-        // Violations in last 1 minute
+        // Current violation_count from the single violations row for this vehicle
         $stmtV = $conn->prepare("
-            SELECT COUNT(*) AS violations_last_minute
+            SELECT violation_count
             FROM violations
             WHERE vehicle_id = ?
-              AND violation_date >= DATE_SUB(NOW(), INTERVAL 1 MINUTE)
+            ORDER BY violation_date DESC
+            LIMIT 1
         ");
         $stmtV->bind_param("i", $row['id']);
         $stmtV->execute();
         $resultV = $stmtV->get_result();
-        $violations_last_minute = $resultV->fetch_assoc()['violations_last_minute'];
-
-        // 🚨 Auto-create challan if violations > 5 in last minute
-        if ($violations_last_minute > 5) {
-            $stmtCh = $conn->prepare("
-                INSERT INTO challans (vehicle_id, challan_date, amount, status)
-                VALUES (?, NOW(), 500, 'unpaid')
-            ");
-            $stmtCh->bind_param("i", $row['id']);
-            $stmtCh->execute();
-        }
+        $violation_count = ($resultV->num_rows > 0) ? (int)$resultV->fetch_assoc()['violation_count'] : 0;
 
         // Total challans
         $stmtC = $conn->prepare("SELECT COUNT(*) AS total_challans FROM challans WHERE vehicle_id=?");
@@ -68,8 +59,8 @@ if ($vehicle_number) {
         $resultU = $stmtU->get_result();
         $unpaid_challans = $resultU->fetch_assoc()['unpaid_challans'];
 
-        // Latest challan info
-        $stmtL = $conn->prepare("SELECT amount, status, challan_date FROM challans WHERE vehicle_id=? ORDER BY challan_date DESC LIMIT 1");
+        // Latest challan info (including violation_count snapshot at time of issue)
+        $stmtL = $conn->prepare("SELECT amount, status, challan_date, violation_count FROM challans WHERE vehicle_id=? ORDER BY challan_date DESC LIMIT 1");
         $stmtL->bind_param("i", $row['id']);
         $stmtL->execute();
         $resultL = $stmtL->get_result();

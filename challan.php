@@ -1,5 +1,6 @@
 <?php
-include 'db_connect.php';
+include __DIR__ . '/db_connect.php';
+
 
 // Handle "Mark as Paid" action
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['challan_id'])) {

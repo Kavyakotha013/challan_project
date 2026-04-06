@@ -1,6 +1,5 @@
 <?php
-include 'db_connect.php';
-
+include __DIR__ . '/db_connect.php';
 $vehicle_id   = $_POST['vehicle_id'] ?? null;
 $violation_id = $_POST['violation_id'] ?? null;
 

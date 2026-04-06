@@ -1,6 +1,6 @@
 <?php
 // Always include the DB connection first
-include 'db_connect.php';
+include __DIR__ . '/db_connect.php';
 
 // Check if connection exists
 if (!isset($conn) || $conn->connect_error) {

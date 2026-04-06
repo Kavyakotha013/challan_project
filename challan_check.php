@@ -9,6 +9,7 @@ if (!$vehicle_id || !$violation_id) {
     exit;
 }
 
+// Upsert challan: one row per vehicle+violation+status
 $stmt = $conn->prepare("
     INSERT INTO challans (vehicle_id, violation_count, status, count, challan_date, updated_at, amount)
     VALUES (?, 1, 'unpaid', 1, NOW(), NOW(), 500.00)

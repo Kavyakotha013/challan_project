@@ -1,5 +1,6 @@
 <?php
-include 'db_connect.php';
+include __DIR__ . '/db_connect.php';
+
 
 // Reset all violation counts
 $sql = "UPDATE violations SET violation_count = 0, violation_date = NOW()";

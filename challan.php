@@ -1,7 +1,6 @@
 <?php
 include __DIR__ . '/db_connect.php';
 
-
 // Handle "Mark as Paid" action
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['challan_id'])) {
     $challan_id = intval($_POST['challan_id']);
@@ -10,8 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['challan_id'])) {
     $stmt->execute();
 }
 
-// Fetch challans
-$query = "SELECT c.id, v.vehicle_number, c.violation_count, c.count, c.status, c.amount, c.challan_date, c.updated_at
+// Fetch challans - FIXED: removed non-existent c.violation_count
+$query = "SELECT c.id, v.vehicle_number, c.count, c.status, c.amount, c.challan_date, c.updated_at
           FROM challans c
           JOIN vehicles v ON c.vehicle_id = v.id
           ORDER BY c.updated_at DESC";
@@ -30,7 +29,6 @@ $result = mysqli_query($conn, $query);
         <tr>
             <th>ID</th>
             <th>Vehicle Number</th>
-            <th>Violation Count</th>
             <th>Repeat Count</th>
             <th>Status</th>
             <th>Amount</th>
@@ -42,7 +40,6 @@ $result = mysqli_query($conn, $query);
         <tr>
             <td><?= htmlspecialchars($row['id']) ?></td>
             <td><?= htmlspecialchars($row['vehicle_number']) ?></td>
-            <td><?= htmlspecialchars($row['violation_count']) ?></td>
             <td><?= htmlspecialchars($row['count']) ?></td>
             <td><?= htmlspecialchars(ucfirst($row['status'])) ?></td>
             <td><?= htmlspecialchars($row['amount']) ?></td>

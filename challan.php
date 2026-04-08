@@ -2,10 +2,10 @@
 include __DIR__ . '/db_connect.php';
 
 // Fetch challans
-$query = "SELECT c.id, v.vehicle_number, c.count, c.status, c.amount, c.challan_date, c.updated_at
+$query = "SELECT c.id, v.vehicle_number, c.violation_count, c.status, c.amount, c.challan_date
           FROM challans c
           JOIN vehicles v ON c.vehicle_id = v.id
-          ORDER BY c.updated_at DESC";
+          ORDER BY c.challan_date DESC";
 $result = mysqli_query($conn, $query);
 ?>
 
@@ -99,12 +99,11 @@ $result = mysqli_query($conn, $query);
         <tr>
             <th>ID</th>
             <th>Vehicle Number</th>
-            <th>Count</th>
+            <th>Violation Count</th>
             <th>Status</th>
             <th>Amount (₹)</th>
             <th>Created At</th>
-            <th>Updated At</th>
-            <th>Payment</th>
+            <th>Action</th>
         </tr>
         <?php while($row = mysqli_fetch_assoc($result)) { ?>
         <tr id="row-<?= intval($row['id']) ?>">
@@ -112,13 +111,12 @@ $result = mysqli_query($conn, $query);
             <td><?= htmlspecialchars($row['vehicle_number']) ?></td>
             <td>
                 <span class="count-badge" id="count-<?= intval($row['id']) ?>">
-                    <?= htmlspecialchars($row['count']) ?>
+                    <?= htmlspecialchars($row['violation_count']) ?>
                 </span>
             </td>
             <td><?= htmlspecialchars(ucfirst($row['status'])) ?></td>
             <td>₹<?= htmlspecialchars(number_format($row['amount'], 2)) ?></td>
             <td><?= htmlspecialchars($row['challan_date']) ?></td>
-            <td><?= htmlspecialchars($row['updated_at']) ?></td>
             <td>
                 <?php if ($row['status'] === 'unpaid') { ?>
                     <form class="payment-form" onsubmit="processPayment(event, <?= intval($row['id']) ?>)">

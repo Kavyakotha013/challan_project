@@ -40,6 +40,16 @@ CREATE TABLE IF NOT EXISTS challans (
  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
 );
+CREATE TABLE IF NOT EXISTS alerts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  vehicle_id INT NOT NULL,
+  alert_type ENUM('warning', 'critical') NOT NULL,
+  pollution_value FLOAT NOT NULL,
+  alert_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('active', 'resolved') NOT NULL DEFAULT 'active',
+  FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
 -- Admin user
 DELETE FROM gov_users WHERE username='admin';
 INSERT INTO gov_users (username, password_hash)

@@ -2,28 +2,120 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pollution Monitoring Portal</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .hero {
+      text-align: center;
+      padding: 10px 0 24px;
+    }
+    .hero .tagline {
+      font-size: 0.95rem;
+      color: #64748b;
+      margin-top: 6px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-top: 10px;
+    }
+    .feature-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 22px 20px;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .feature-card .icon { font-size: 2rem; display: block; margin-bottom: 10px; }
+    .feature-card h3 { font-size: 1rem; color: #1e293b; margin-bottom: 6px; }
+    .feature-card p  { font-size: 0.82rem; color: #64748b; margin-bottom: 14px; line-height: 1.5; }
+    .btn-primary {
+      display: inline-block;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #2980b9; }
+    .btn-secondary {
+      display: inline-block;
+      background: #1e293b;
+      color: #e2e8f0;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover { background: #334155; }
+    .challan-form { text-align: left; }
+    .divider {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 28px 0 20px;
+    }
+    .quick-check h2 { margin-bottom: 14px; }
+  </style>
 </head>
 <body>
 <div class="container">
-  <h1>🚗 Pollution Monitoring & Payment Portal</h1>
 
-  <div class="card">
-    <h2>💳 Check Challan Status</h2>
-    <form action="challan.php" method="POST">
-      <input type="text" name="vehicle_number" placeholder="Enter Vehicle Number" required>
-      <input type="text" name="phone_number" placeholder="Enter Phone Number (optional)">
+  <div class="hero">
+    <h1>🌿 Pollution Monitoring Portal</h1>
+    <p class="tagline">Real-time vehicle emission tracking &amp; compliance management</p>
+  </div>
+
+  <!-- Feature Cards -->
+  <div class="card-grid">
+    <div class="feature-card">
+      <span class="icon">📊</span>
+      <h3>Live Dashboard</h3>
+      <p>Real-time pollution levels, active alerts, and fleet compliance status.</p>
+      <a href="dashboard.php" class="btn-secondary">Open Dashboard</a>
+    </div>
+    <div class="feature-card">
+      <span class="icon">💳</span>
+      <h3>Challan Records</h3>
+      <p>View and manage all issued challans and process payments online.</p>
+      <a href="challan.php" class="btn-primary">View Challans</a>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🔒</span>
+      <h3>Authority Login</h3>
+      <p>Government officials can log in to register vehicles and manage data.</p>
+      <a href="gov_login.php" class="btn-primary">Login</a>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Quick Challan Check -->
+  <div class="quick-check card">
+    <h2>🔍 Quick Challan Check</h2>
+    <form action="challan.php" method="POST" class="challan-form">
+      <label>Vehicle Number</label>
+      <input type="text" name="vehicle_number" placeholder="e.g. MH12AB1234" required>
+      <label>Phone Number <span style="font-weight:400; color:#94a3b8;">(optional)</span></label>
+      <input type="text" name="phone_number" placeholder="Enter registered phone number">
       <button type="submit">Check Status</button>
     </form>
   </div>
 
-  <div class="card">
-    <h2>🔒 Government Official Login</h2>
-    <a href="gov_login.php"><button>Login</button></a>
-  </div>
-
-  <div class="footer">© 2026 Pollution Monitoring Portal</div>
+  <div class="footer">© 2026 Pollution Monitoring Portal · Built for cleaner roads</div>
 </div>
 </body>
 </html>

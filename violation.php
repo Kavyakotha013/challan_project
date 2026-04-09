@@ -13,7 +13,7 @@ if (!isset($conn) || $conn->connect_error) {
     ]));
 }
 
-// Get POST data
+// Get POST data safely
 $sensor_code     = $_POST['sensor_code'] ?? null;
 $pollution_value = $_POST['pollution_value'] ?? null;
 $violation_count = $_POST['violation_count'] ?? null;
@@ -53,12 +53,12 @@ if ($result->num_rows === 0) {
 $row        = $result->fetch_assoc();
 $vehicle_id = $row['id'];
 
-// Step 2: Update violation record each minute
+// Step 2: Insert or update violation record
 $stmt2 = $conn->prepare("
     INSERT INTO violations (vehicle_id, sensor_code, pollution_value, violation_count, min_count, violation_date)
     VALUES (?, ?, ?, ?, ?, NOW())
     ON DUPLICATE KEY UPDATE
-        pollution_value = VALUES(pollution_value),
+        pollution_value = pollution_value + VALUES(pollution_value),
         violation_count = VALUES(violation_count),
         min_count       = VALUES(min_count),
         violation_date  = NOW()

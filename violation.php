@@ -82,7 +82,7 @@ if ((int)$min_count === 3) {
     $resetStmt->execute();
 
     // Call challan creation logic
-    include __DIR__ . '/generate_challan.php';
+    include __DIR__ . '/challan.php';
     generateChallan($vehicle_id, $sensor_code);
 }
 

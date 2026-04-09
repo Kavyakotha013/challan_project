@@ -23,10 +23,10 @@ CREATE TABLE IF NOT EXISTS violations (
   sensor_code VARCHAR(100) NOT NULL,
   pollution_value FLOAT NOT NULL,
   violation_count INT DEFAULT 0,
+  minutes_count INT DEFAULT 0,
   violation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
   UNIQUE KEY uq_vehicle (vehicle_id)
-
 );
 
 CREATE TABLE IF NOT EXISTS challans (

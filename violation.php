@@ -76,15 +76,31 @@ if (!$stmt2->execute()) {
 
 // Step 3: If min_count == 3 → generate challan
 if ((int)$min_count === 3) {
-    // Reset min_count in DB
-    $resetStmt = $conn->prepare("UPDATE violations SET min_count=0 WHERE vehicle_id=?");
-    $resetStmt->bind_param("i", $vehicle_id);
-    $resetStmt->execute();
+    // Fetch current violation count
+    $checkStmt = $conn->prepare("SELECT violation_count FROM violations WHERE vehicle_id=?");
+    $checkStmt->bind_param("i", $vehicle_id);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+    $checkRow = $checkResult->fetch_assoc();
+    $current_violation_count = $checkRow['violation_count'] ?? 0;
 
-    // Call challan creation logic
-    include __DIR__ . '/challan.php';
-    generateChallan($vehicle_id, $sensor_code);
+    if ($current_violation_count >= 7) {
+        // Reset min_count in DB
+        $resetStmt = $conn->prepare("UPDATE violations SET min_count=0 WHERE vehicle_id=?");
+        $resetStmt->bind_param("i", $vehicle_id);
+        $resetStmt->execute();
+
+        // Call challan creation logic
+        include __DIR__ . '/challan.php';
+        generateChallan($vehicle_id, $sensor_code);
+    } else {
+        // Just reset min_count, no challan
+        $resetStmt = $conn->prepare("UPDATE violations SET min_count=0 WHERE vehicle_id=?");
+        $resetStmt->bind_param("i", $vehicle_id);
+        $resetStmt->execute();
+    }
 }
+
 
 // Step 4: Response
 echo json_encode([

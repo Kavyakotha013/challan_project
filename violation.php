@@ -16,6 +16,8 @@ if (!isset($conn) || $conn->connect_error) {
 // Get POST data
 $sensor_code     = $_POST['sensor_code'] ?? null;
 $pollution_value = $_POST['pollution_value'] ?? null;
+$violation_count = $_POST['violation_count'] ?? null;
+$min_count       = $_POST['min_count'] ?? null;
 
 // Validate input
 if (!$sensor_code || !$pollution_value) {
@@ -51,17 +53,18 @@ if ($result->num_rows === 0) {
 $row        = $result->fetch_assoc();
 $vehicle_id = $row['id'];
 
-// Step 2: Insert or Update violation
+// Step 2: Update violation record each minute
 $stmt2 = $conn->prepare("
-    INSERT INTO violations (vehicle_id, sensor_code, pollution_value, violation_count, violation_date)
-    VALUES (?, ?, ?, 1, NOW())
+    INSERT INTO violations (vehicle_id, sensor_code, pollution_value, violation_count, min_count, violation_date)
+    VALUES (?, ?, ?, ?, ?, NOW())
     ON DUPLICATE KEY UPDATE
-        violation_count = violation_count + 1,
         pollution_value = VALUES(pollution_value),
+        violation_count = VALUES(violation_count),
+        min_count       = VALUES(min_count),
         violation_date  = NOW()
 ");
 
-$stmt2->bind_param("isd", $vehicle_id, $sensor_code, $pollution_value);
+$stmt2->bind_param("isdii", $vehicle_id, $sensor_code, $pollution_value, $violation_count, $min_count);
 
 if (!$stmt2->execute()) {
     echo json_encode([
@@ -71,71 +74,27 @@ if (!$stmt2->execute()) {
     exit;
 }
 
-// Step 3: Get updated count
-$stmt3 = $conn->prepare("SELECT violation_count FROM violations WHERE vehicle_id=?");
-$stmt3->bind_param("i", $vehicle_id);
-$stmt3->execute();
-$countResult = $stmt3->get_result();
-$countRow    = $countResult->fetch_assoc();
+// Step 3: If min_count == 3 → generate challan
+if ((int)$min_count === 3) {
+    // Reset min_count in DB
+    $resetStmt = $conn->prepare("UPDATE violations SET min_count=0 WHERE vehicle_id=?");
+    $resetStmt->bind_param("i", $vehicle_id);
+    $resetStmt->execute();
 
-// Step 4: Check pollution value against configured thresholds and trigger alerts
-$alert_triggered = false;
-$alert_type      = null;
-$alert_result    = null;
-
-$pollution_float = (float) $pollution_value;
-
-if ($pollution_float >= POLLUTION_LIMIT) {
-    // Critical — reading at or above the hard limit
-    $alert_type = 'critical';
-} elseif ($pollution_float >= ALERT_THRESHOLD) {
-    // Warning — reading in the caution zone
-    $alert_type = 'warning';
+    // Call challan creation logic
+    include __DIR__ . '/generate_challan.php';
+    generateChallan($vehicle_id, $sensor_code);
 }
 
-if ($alert_type !== null) {
-    // Log the alert and dispatch notifications via the dedicated endpoint.
-    // We call it internally using an HTTP POST so all notification logic
-    // stays in one place and can be tested independently.
-    $notify_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
-                . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')
-                . rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\')
-                . '/alert_notifications.php';
-
-    $post_data = http_build_query([
-        'vehicle_id'      => $vehicle_id,
-        'alert_type'      => $alert_type,
-        'pollution_value' => $pollution_float,
-    ]);
-
-    $ctx = stream_context_create([
-        'http' => [
-            'method'  => 'POST',
-            'header'  => "Content-Type: application/x-www-form-urlencoded\r\n"
-                       . "Content-Length: " . strlen($post_data) . "\r\n",
-            'content' => $post_data,
-            'timeout' => 5,
-            'ignore_errors' => true,
-        ],
-    ]);
-
-    $raw = @file_get_contents($notify_url, false, $ctx);
-    if ($raw !== false) {
-        $alert_result    = json_decode($raw, true);
-        $alert_triggered = ($alert_result['status'] ?? '') === 'success';
-    }
-}
-
-// Final response
+// Step 4: Response
 echo json_encode([
     "status"          => "success",
     "message"         => "Violation recorded",
     "vehicle_id"      => $vehicle_id,
     "vehicle_number"  => $row['vehicle_number'],
-    "violation_count" => $countRow['violation_count'] ?? 0,
-    "pollution_value" => $pollution_float,
-    "alert_triggered" => $alert_triggered,
-    "alert_type"      => $alert_type,
+    "violation_count" => $violation_count,
+    "pollution_value" => (float)$pollution_value,
+    "min_count"       => $min_count
 ]);
 
 $conn->close();

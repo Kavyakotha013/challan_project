@@ -62,13 +62,6 @@
       transition: background 0.2s;
     }
     .btn-secondary:hover { background: #334155; }
-    .challan-form { text-align: left; }
-    .divider {
-      border: none;
-      border-top: 1px solid #e2e8f0;
-      margin: 28px 0 20px;
-    }
-    .quick-check h2 { margin-bottom: 14px; }
   </style>
 </head>
 <body>
@@ -99,20 +92,6 @@
       <p>Government officials can log in to register vehicles and manage data.</p>
       <a href="gov_login.php" class="btn-primary">Login</a>
     </div>
-  </div>
-
-  <hr class="divider">
-
-  <!-- Quick Challan Check -->
-  <div class="quick-check card">
-    <h2>🔍 Quick Challan Check</h2>
-    <form action="challan.php" method="POST" class="challan-form">
-      <label>Vehicle Number</label>
-      <input type="text" name="vehicle_number" placeholder="e.g. MH12AB1234" required>
-      <label>Phone Number <span style="font-weight:400; color:#94a3b8;">(optional)</span></label>
-      <input type="text" name="phone_number" placeholder="Enter registered phone number">
-      <button type="submit">Check Status</button>
-    </form>
   </div>
 
   <div class="footer">© 2026 Pollution Monitoring Portal · Built for cleaner roads</div>

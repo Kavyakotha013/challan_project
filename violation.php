@@ -59,7 +59,7 @@ $stmt2 = $conn->prepare("
     VALUES (?, ?, ?, ?, ?, NOW())
     ON DUPLICATE KEY UPDATE
         pollution_value = pollution_value + VALUES(pollution_value),
-        violation_count = VALUES(violation_count),
+        violation_count = violation_count + VALUES(violation_count),
         min_count       = VALUES(min_count),
         violation_date  = NOW()
 ");
@@ -74,30 +74,27 @@ if (!$stmt2->execute()) {
     exit;
 }
 
-// Step 3: If min_count == 3 → generate challan
+// Step 3: If min_count == 3 → check accumulated violations and maybe generate challan
 if ((int)$min_count === 3) {
-    // Fetch current violation count
+    // Fetch current (accumulated) violation count after the upsert
     $checkStmt = $conn->prepare("SELECT violation_count FROM violations WHERE vehicle_id=?");
     $checkStmt->bind_param("i", $vehicle_id);
     $checkStmt->execute();
     $checkResult = $checkStmt->get_result();
-    $checkRow = $checkResult->fetch_assoc();
+    $checkRow    = $checkResult->fetch_assoc();
     $current_violation_count = $checkRow['violation_count'] ?? 0;
 
-    if ($current_violation_count >= 7) {
-        // Reset min_count in DB
-        $resetStmt = $conn->prepare("UPDATE violations SET min_count=0 WHERE vehicle_id=?");
-        $resetStmt->bind_param("i", $vehicle_id);
-        $resetStmt->execute();
+    // Reset min_count regardless of whether a challan is issued
+    $resetStmt = $conn->prepare("UPDATE violations SET min_count=0 WHERE vehicle_id=?");
+    $resetStmt->bind_param("i", $vehicle_id);
+    $resetStmt->execute();
 
-        // Call challan creation logic
+    if ($current_violation_count >= 7) {
+        // Delegate challan creation entirely to generateChallan()
+        // Define constant so challan.php skips its HTML view block
+        if (!defined('CHALLAN_INCLUDED')) define('CHALLAN_INCLUDED', true);
         include __DIR__ . '/challan.php';
         generateChallan($vehicle_id, $sensor_code);
-    } else {
-        // Just reset min_count, no challan
-        $resetStmt = $conn->prepare("UPDATE violations SET min_count=0 WHERE vehicle_id=?");
-        $resetStmt->bind_param("i", $vehicle_id);
-        $resetStmt->execute();
     }
 }
 
